@@ -16,8 +16,8 @@ InterpretResult :: enum {
 VM :: struct {
 	chunk: ^Chunk,
 	ip:    u8, // TODO raw pointer aritmatic in array faster?
-    stack : [STACK_MAX]Value,
-	top : int,
+	stack: [STACK_MAX]Value,
+	top:   int,
 }
 
 vm: VM
@@ -32,7 +32,7 @@ reset_stack :: proc() {
 }
 
 @(private = "file")
-push :: proc(value : Value) {
+push :: proc(value: Value) {
 	vm.stack[vm.top] = value
 	vm.top += 1
 }
@@ -43,18 +43,23 @@ pop :: proc() -> Value {
 	return vm.stack[vm.top]
 }
 
-
-interpret :: proc(chunk: ^Chunk) -> InterpretResult {
-	if len(chunk.code) == 0 {
-		return .OK
-	}
-
-	vm.chunk = chunk
-	vm.ip = 0
-	return run()
+interpret :: proc(source: string) -> InterpretResult {
+	compile(source)
+	return .OK
 }
 
-binary_op :: proc(op : proc(_: Value, _: Value) -> Value) {
+
+// interpret :: proc(chunk: ^Chunk) -> InterpretResult {
+// 	if len(chunk.code) == 0 {
+// 		return .OK
+// 	}
+
+// 	vm.chunk = chunk
+// 	vm.ip = 0
+// 	return run()
+// }
+
+binary_op :: proc(op: proc(_: Value, _: Value) -> Value) {
 	b := pop() // First b, then a!!
 	a := pop()
 	push(op(a, b))
@@ -74,7 +79,7 @@ run :: proc() -> InterpretResult {
 	for {
 		when ODIN_DEBUG {
 			fmt.print("         ")
-			for i:= 0; i < vm.top; i += 1 {
+			for i := 0; i < vm.top; i += 1 {
 				fmt.print("[ ")
 				print_value(vm.stack[i])
 				fmt.print(" ]")
@@ -84,25 +89,25 @@ run :: proc() -> InterpretResult {
 		}
 		instruction: Opcode = auto_cast read_byte()
 		#partial switch instruction {
-			case .RETURN:
-				print_value(pop())
-				fmt.println()
-				return .OK
-			case .CONSTANT:
-				value := read_constant()
-				push(value)
-			case .NEGATE:
-				push(-pop())
-			// my code
-			case .ADD:
-				binary_op(proc(a : Value, b : Value) -> Value {return a + b})
-			case .SUBSTRACT:
-				binary_op(proc(a : Value, b : Value) -> Value {return a - b})
-			case .MULTIPLY:
-				binary_op(proc(a : Value, b : Value) -> Value {return a * b})
-			case .DIVIDE:
-				binary_op(proc(a : Value, b : Value) -> Value {return a / b})
-			// end my code
+		case .RETURN:
+			print_value(pop())
+			fmt.println()
+			return .OK
+		case .CONSTANT:
+			value := read_constant()
+			push(value)
+		case .NEGATE:
+			push(-pop())
+		// my code
+		case .ADD:
+			binary_op(proc(a: Value, b: Value) -> Value {return a + b})
+		case .SUBSTRACT:
+			binary_op(proc(a: Value, b: Value) -> Value {return a - b})
+		case .MULTIPLY:
+			binary_op(proc(a: Value, b: Value) -> Value {return a * b})
+		case .DIVIDE:
+			binary_op(proc(a: Value, b: Value) -> Value {return a / b})
+		// end my code
 		}
 	}
 	return .OK

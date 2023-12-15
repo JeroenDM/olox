@@ -36,6 +36,7 @@ repl :: proc() {
 		}
 		line := string(buffer[:n])
 		fmt.println(line)
+		lox.interpret(line)
 	}
 }
 
@@ -49,38 +50,40 @@ run_file :: proc(file: string) {
 
 	code := string(data)
 
+	lox.interpret(code)
+
 	fmt.printf("%s\n", data)
 }
 
-manual_example :: proc() {
-	using lox
+// manual_example :: proc() {
+// 	using lox
 
-	init_vm()
-	defer delete_vm()
+// 	init_vm()
+// 	defer delete_vm()
 
-	chunk: Chunk
-	defer delete_chunk(&chunk)
+// 	chunk: Chunk
+// 	defer delete_chunk(&chunk)
 
-	// idx := add_constant(&chunk, 1.2)
+// 	// idx := add_constant(&chunk, 1.2)
 
-	add_code(&chunk, Opcode.CONSTANT, 1)
-	add_code(&chunk, add_constant(&chunk, 1.2), 1)
-	add_code(&chunk, Opcode.CONSTANT, 1)
-	add_code(&chunk, add_constant(&chunk, 3.4), 1)
+// 	add_code(&chunk, Opcode.CONSTANT, 1)
+// 	add_code(&chunk, add_constant(&chunk, 1.2), 1)
+// 	add_code(&chunk, Opcode.CONSTANT, 1)
+// 	add_code(&chunk, add_constant(&chunk, 3.4), 1)
 
-	add_code(&chunk, Opcode.ADD, 1)
+// 	add_code(&chunk, Opcode.ADD, 1)
 
-	add_code(&chunk, Opcode.CONSTANT, 1)
-	add_code(&chunk, add_constant(&chunk, 5.6), 1)
+// 	add_code(&chunk, Opcode.CONSTANT, 1)
+// 	add_code(&chunk, add_constant(&chunk, 5.6), 1)
 
-	add_code(&chunk, Opcode.DIVIDE, 1)
+// 	add_code(&chunk, Opcode.DIVIDE, 1)
 
-	add_code(&chunk, Opcode.NEGATE, 1)
+// 	add_code(&chunk, Opcode.NEGATE, 1)
 
-	add_code(&chunk, Opcode.RETURN, 2)
-	disassemble_chunk(&chunk, "test chunk")
+// 	add_code(&chunk, Opcode.RETURN, 2)
+// 	disassemble_chunk(&chunk, "test chunk")
 
-	fmt.println("--- interpret ---")
-	res := lox.interpret(&chunk)
-	fmt.printf("{}\n", res)
-}
+// 	fmt.println("--- interpret ---")
+// 	res := lox.interpret(&chunk)
+// 	fmt.printf("{}\n", res)
+// }
