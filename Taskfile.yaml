@@ -1,0 +1,44 @@
+version: '3'
+
+tasks:
+
+  test:
+    cmds:
+      - odin test lox -out=./bin/lox-test-debug -o:none -debug
+    aliases:
+      - t
+    sources:
+      - ./**/*.odin
+    generates:
+      - ./bin/lox-test-debug
+
+
+  build_debug:
+      cmds:
+        - odin build . -out=./bin/lox-debug -o:none -debug
+      aliases:
+        - bd
+      sources:
+        - ./**/*.odin
+      generates:
+        - ./bin/lox-debug
+  
+  run:
+    depends:
+      - build_debug
+    cmds:
+      - ./bin/lox-debug
+    aliases:
+      - r
+    method: none
+    
+  debug:
+    depends:
+      - build_debug
+    aliases:
+      - d
+    cmds:
+      - gdb ./bin/lox-debug
+    method: none
+  
+
