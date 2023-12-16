@@ -2,3 +2,4 @@
 1 + 3.0;
 print "hello";
 var x_1 = 1;
+var vary = 5;

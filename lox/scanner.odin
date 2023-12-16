@@ -170,7 +170,71 @@ scan_identifier :: proc(s: ^Scanner) -> Token {
 	for (is_alpha_numeric(peek(s)) && !is_at_end(s)) {
 		advance(s)
 	}
-	return make_token(s, .IDENTIFIER)
+	return make_token(s, keyword_or_identifier(s))
+}
+
+keyword_or_identifier :: proc(s: ^Scanner) -> TokenType {
+	switch s.source[s.start] {
+	case 'a':
+		return check_keyword(s, 1, 2, "nd", .AND)
+	case 'c':
+		return check_keyword(s, 1, 4, "lass", .CLASS)
+	case 'e':
+		return check_keyword(s, 1, 3, "lse", .ELSE)
+	case 'f':
+		if s.current - s.start > 1 {
+			switch s.source[s.start + 1] {
+			case 'a':
+				return check_keyword(s, 2, 3, "lse", .FALSE)
+			case 'o':
+				return check_keyword(s, 2, 1, "r", .FOR)
+			case 'u':
+				return check_keyword(s, 2, 1, "n", .FUN)
+			}
+		}
+	case 'i':
+		return check_keyword(s, 1, 1, "f", .IF)
+	case 'n':
+		return check_keyword(s, 1, 2, "il", .NIL)
+	case 'o':
+		return check_keyword(s, 1, 1, "r", .OR)
+	case 'p':
+		return check_keyword(s, 1, 4, "rint", .PRINT)
+	case 'r':
+		return check_keyword(s, 1, 5, "eturn", .RETURN)
+	case 's':
+		return check_keyword(s, 1, 4, "uper", .SUPER)
+	case 't':
+		if (s.current - s.start > 1) {
+			switch s.source[s.start + 1] {
+			case 'h':
+				return check_keyword(s, 2, 2, "is", .THIS)
+			case 'r':
+				return check_keyword(s, 2, 2, "ue", .TRUE)
+			}
+		}
+	case 'v':
+		return check_keyword(s, 1, 2, "ar", .VAR)
+	case 'w':
+		return check_keyword(s, 1, 4, "hile", .WHILE)
+	case:
+	}
+	return .IDENTIFIER
+}
+
+check_keyword :: proc(
+	s: ^Scanner,
+	start: int,
+	length: int,
+	rest: string,
+	type: TokenType,
+) -> TokenType {
+	if (s.current - s.start) == (start + length) &&
+	   cmp_slices(s.source[s.start + start:][:length], transmute([]u8)rest) {
+		return type
+	} else {
+		return .IDENTIFIER
+	}
 }
 
 
@@ -252,4 +316,12 @@ is_alpha :: proc(c: u8) -> bool {
 
 is_alpha_numeric :: proc(c: u8) -> bool {
 	return is_alpha(c) || is_digit(c)
+}
+
+cmp_slices :: proc(a: []u8, b: []u8) -> bool {
+	if (len(a) != len(b)) {return false}
+	for i in 0 ..< len(a) {
+		if a[i] != b[i] {return false}
+	}
+	return true
 }
