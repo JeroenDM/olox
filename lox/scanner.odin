@@ -73,6 +73,9 @@ init_scanner :: proc(s: ^Scanner, source: []u8) {
 	s.source = source
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Main scanner switch 
+///////////////////////////////////////////////////////////////////////////////
 
 scan_token :: proc(s: ^Scanner) -> Token {
 	skip_withspace(s)
@@ -117,10 +120,63 @@ scan_token :: proc(s: ^Scanner) -> Token {
 		return make_token(s, match(s, '=') ? .LESS_EQUAL : .LESS)
 	case '>':
 		return make_token(s, match(s, '=') ? .GREATER_EQUAL : .GREATER)
+
+	case '"':
+		return scan_string(s)
 	}
+
+	if is_digit(c) {
+		return scan_number(s)
+	}
+
+	if is_alpha(c) {
+		return scan_identifier(s)
+	}
+
 
 	return error_token("Unexpected character.")
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Scan special thingies. 
+///////////////////////////////////////////////////////////////////////////////
+
+scan_string :: proc(s: ^Scanner) -> Token {
+	for (peek(s) != '"' && !is_at_end(s)) {
+		if (peek(s) == '\n') {s.line += 1}
+		advance(s)
+	}
+
+	if (is_at_end(s)) {return error_token("Unterminated string.")}
+	advance(s) // skip past the closing quote.
+	return make_token(s, .STRING) // TODO
+
+}
+
+scan_number :: proc(s: ^Scanner) -> Token {
+	for is_digit(peek(s)) {advance(s)}
+
+	//A dot must be follower by a digit!
+	for peek(s) == '.' && is_digit(peek_next(s)) {
+		advance(s)
+	}
+
+	for is_digit(peek(s)) {advance(s)}
+
+	return make_token(s, .NUMBER)
+}
+
+scan_identifier :: proc(s: ^Scanner) -> Token {
+	for (is_alpha_numeric(peek(s)) && !is_at_end(s)) {
+		advance(s)
+	}
+	return make_token(s, .IDENTIFIER)
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Utilities
+///////////////////////////////////////////////////////////////////////////////
 
 is_at_end :: proc(s: ^Scanner) -> bool {
 	return !(s.current < len(s.source))
@@ -152,6 +208,13 @@ skip_withspace :: proc(s: ^Scanner) {
 		switch peek(s) {
 		case ' ', '\r', '\t':
 			advance(s)
+		case '\n':
+			s.line += 1
+			advance(s)
+		case '/':
+			if peek_next(s) == '/' {
+				for peek(s) != '\n' && !is_at_end(s) {advance(s)}
+			}
 		case:
 			return
 		}
@@ -160,4 +223,33 @@ skip_withspace :: proc(s: ^Scanner) {
 
 peek :: proc(s: ^Scanner) -> u8 {
 	return s.source[s.current]
+}
+
+
+peek_next :: proc(s: ^Scanner) -> u8 {
+	if is_at_end(s) {return '?'} 	// TODO
+	return s.source[s.current + 1]
+}
+
+is_digit :: proc(c: u8) -> bool {
+	switch c {
+	case '0' ..= '9':
+		return true
+	case:
+		return false
+	}
+}
+
+
+is_alpha :: proc(c: u8) -> bool {
+	switch c {
+	case 'A' ..= 'Z', 'a' ..= 'z', '_':
+		return true
+	case:
+		return false
+	}
+}
+
+is_alpha_numeric :: proc(c: u8) -> bool {
+	return is_alpha(c) || is_digit(c)
 }

@@ -8,7 +8,13 @@ compile :: proc(source: string) {
 
 	for {
 		token := scan_token(&scanner)
-		fmt.printf("{}\n", token)
+		// fmt.printf("{}\n", token)
+		fmt.printf(
+			"type: %-16s\tlexeme: %-10s\t line: %d\n",
+			token.type,
+			source[token.start:token.start + token.lenght],
+			token.line,
+		)
 
 		if token.type == .EOF {break}
 	}
