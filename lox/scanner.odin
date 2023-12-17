@@ -141,6 +141,7 @@ scan_token :: proc(s: ^Scanner) -> Token {
 // Scan special thingies. 
 ///////////////////////////////////////////////////////////////////////////////
 
+@(private = "file")
 scan_string :: proc(s: ^Scanner) -> Token {
 	for (peek(s) != '"' && !is_at_end(s)) {
 		if (peek(s) == '\n') {s.line += 1}
@@ -153,6 +154,7 @@ scan_string :: proc(s: ^Scanner) -> Token {
 
 }
 
+@(private = "file")
 scan_number :: proc(s: ^Scanner) -> Token {
 	for is_digit(peek(s)) {advance(s)}
 
@@ -166,6 +168,7 @@ scan_number :: proc(s: ^Scanner) -> Token {
 	return make_token(s, .NUMBER)
 }
 
+@(private = "file")
 scan_identifier :: proc(s: ^Scanner) -> Token {
 	for (is_alpha_numeric(peek(s)) && !is_at_end(s)) {
 		advance(s)
@@ -173,6 +176,7 @@ scan_identifier :: proc(s: ^Scanner) -> Token {
 	return make_token(s, keyword_or_identifier(s))
 }
 
+@(private = "file")
 keyword_or_identifier :: proc(s: ^Scanner) -> TokenType {
 	switch s.source[s.start] {
 	case 'a':
@@ -242,23 +246,28 @@ check_keyword :: proc(
 // Utilities
 ///////////////////////////////////////////////////////////////////////////////
 
+@(private = "file")
 is_at_end :: proc(s: ^Scanner) -> bool {
 	return !(s.current < len(s.source))
 }
 
+@(private = "file")
 make_token :: proc(s: ^Scanner, t: TokenType) -> Token {
 	return Token{t, s.start, s.current - s.start, s.line}
 }
 
+@(private = "file")
 error_token :: proc(msg: string) -> Token {
 	return Token{.ERROR, 0, 0, 1}
 }
 
+@(private = "file")
 advance :: proc(s: ^Scanner) -> u8 {
 	s.current += 1
 	return s.source[s.current - 1]
 }
 
+@(private = "file")
 match :: proc(s: ^Scanner, expected: u8) -> bool {
 	if is_at_end(s) {return false}
 	if expected != s.source[s.current] {return false}
@@ -266,6 +275,7 @@ match :: proc(s: ^Scanner, expected: u8) -> bool {
 	return true
 }
 
+@(private = "file")
 skip_withspace :: proc(s: ^Scanner) {
 	for {
 		if is_at_end(s) {return}
@@ -285,16 +295,19 @@ skip_withspace :: proc(s: ^Scanner) {
 	}
 }
 
+@(private = "file")
 peek :: proc(s: ^Scanner) -> u8 {
 	return s.source[s.current]
 }
 
 
+@(private = "file")
 peek_next :: proc(s: ^Scanner) -> u8 {
 	if is_at_end(s) {return '?'} 	// TODO
 	return s.source[s.current + 1]
 }
 
+@(private = "file")
 is_digit :: proc(c: u8) -> bool {
 	switch c {
 	case '0' ..= '9':
@@ -305,6 +318,7 @@ is_digit :: proc(c: u8) -> bool {
 }
 
 
+@(private = "file")
 is_alpha :: proc(c: u8) -> bool {
 	switch c {
 	case 'A' ..= 'Z', 'a' ..= 'z', '_':
@@ -314,10 +328,12 @@ is_alpha :: proc(c: u8) -> bool {
 	}
 }
 
+@(private = "file")
 is_alpha_numeric :: proc(c: u8) -> bool {
 	return is_alpha(c) || is_digit(c)
 }
 
+@(private = "file")
 cmp_slices :: proc(a: []u8, b: []u8) -> bool {
 	if (len(a) != len(b)) {return false}
 	for i in 0 ..< len(a) {

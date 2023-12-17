@@ -6,6 +6,8 @@ import "lox"
 
 
 main :: proc() {
+	lox.init_vm()
+	defer lox.delete_vm()
 
 	// manual_example()
 	args := os.args
@@ -52,7 +54,7 @@ run_file :: proc(file: string) {
 
 	lox.interpret(code)
 
-	fmt.printf("%s\n", data)
+	// fmt.printf("%s\n", data)
 }
 
 // manual_example :: proc() {

@@ -44,8 +44,20 @@ pop :: proc() -> Value {
 }
 
 interpret :: proc(source: string) -> InterpretResult {
-	compile(source)
-	return .OK
+	chunk: Chunk
+	defer delete_chunk(&chunk)
+
+	if !compile(source, &chunk) {
+		return .COMPILE_ERROR
+	}
+
+	vm.chunk = &chunk
+	add_code(&chunk, Opcode.CONSTANT, 1)
+	add_code(&chunk, add_constant(&chunk, 1.2), 1)
+	add_code(vm.chunk, Opcode.RETURN, 1)
+	vm.ip = 0
+
+	return run()
 }
 
 
